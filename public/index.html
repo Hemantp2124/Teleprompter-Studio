@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-950">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,310 +7,679 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Inter', sans-serif; background-color: #0f1416; color: #e2e8f0; }
+        .border-custom { border-color: #1e2528; }
+        .bg-custom { background-color: #0f1416; }
+        .bg-custom-panel { background-color: #151a1e; }
+        .bg-custom-hover { background-color: #1e2528; }
+        .text-teal-custom { color: #14b8a6; }
+        .bg-teal-custom { background-color: #14b8a6; }
+        .ring-teal-custom { --tw-ring-color: #14b8a6; }
+        
         .mirrored { transform: scaleX(-1); }
+        .focus-mask {
+            -webkit-mask-image: linear-gradient(to bottom, transparent 2%, black 15%, black 30%, transparent 45%);
+            mask-image: linear-gradient(to bottom, transparent 2%, black 15%, black 30%, transparent 45%);
+        }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #1e2528; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #2d3748; }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            background: #1e2528;
+            height: 4px;
+            border-radius: 2px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #14b8a6;
+            cursor: pointer;
+        }
     </style>
 </head>
-<body class="h-full flex flex-col overflow-hidden text-slate-200">
-    <header class="h-14 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-6 shrink-0 relative z-50">
-        <div class="flex items-center gap-3">
-            <div class="w-8 h-8 bg-red-600 rounded flex items-center justify-center">
-                <div class="w-3 h-3 bg-white rounded-full animate-pulse"></div>
+<body class="h-screen flex flex-col overflow-hidden text-sm">
+
+    <!-- Top Navigation Bar -->
+    <header class="h-12 border-b border-custom flex items-center px-4 justify-between shrink-0 bg-custom-panel">
+        <div class="flex items-center gap-4">
+            <div class="w-8 h-8 rounded-lg bg-teal-custom/20 text-teal-custom flex items-center justify-center font-bold text-xs">
+                TS
             </div>
-            <h1 class="text-lg font-bold tracking-tight text-white">PROMPTER<span class="text-red-500 font-mono ml-1">STUDIO</span></h1>
+            <div class="w-64 h-8 bg-[#0f1416] rounded-md border border-custom flex items-center px-3 text-slate-500 hidden sm:flex">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                Search scripts, sessions...
+            </div>
         </div>
-        <div class="flex items-center gap-6 text-xs font-mono uppercase tracking-widest">
-            <div class="items-center gap-2 hidden md:flex"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> 1080p | 30fps</div>
-            <div class="text-slate-400 hidden md:block">Audio: 48kHz Stereo</div>
-            <div id="recIndicator" class="text-red-500 font-bold hidden">REC</div>
-            
-            <!-- Download Dropdown -->
-            <div class="relative">
-                <button id="downloadMenuBtn" class="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors hidden" title="Download Assets">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                </button>
-                <div id="downloadDropdown" class="absolute right-0 top-full mt-2 w-64 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl overflow-hidden hidden flex-col z-50">
-                    <div class="p-3 border-b border-slate-800 bg-slate-800/50">
-                        <h3 class="text-[10px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                            <svg class="w-3 h-3 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            Session Assets Ready
-                        </h3>
-                    </div>
-                    <div class="flex flex-col p-2 gap-1">
-                        <a id="downloadVideoBtn" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-white hover:bg-emerald-600/20 hover:text-emerald-400 transition-colors cursor-pointer">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                            Video File (.webm)
-                        </a>
-                        <a id="downloadAudioBtn" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-white hover:bg-blue-600/20 hover:text-blue-400 transition-colors cursor-pointer">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
-                            Audio Only (.wav)
-                        </a>
-                    </div>
-                </div>
+        <div class="flex items-center gap-2">
+            <div class="px-3 py-1.5 rounded-full bg-teal-custom/10 text-teal-custom text-xs font-semibold flex items-center gap-2 border border-teal-custom/20">
+                <div class="w-5 h-5 rounded-full bg-teal-custom flex items-center justify-center text-slate-900">HP</div>
+                <span class="hidden sm:inline">hemant patil</span>
             </div>
         </div>
     </header>
 
-    <main class="flex-1 flex flex-col md:flex-row overflow-hidden">
-        <!-- Left Column -->
-        <aside class="w-full md:w-[380px] bg-slate-900/50 border-r border-slate-800 p-6 flex flex-col gap-6 shrink-0 z-10 relative shadow-xl overflow-y-auto">
-            <div class="flex-1 flex flex-col gap-2">
-                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Script Editor</label>
-                <textarea id="scriptInput" class="flex-1 bg-slate-950 border border-slate-800 rounded-lg p-4 text-sm leading-relaxed text-slate-300 resize-none focus:outline-none focus:border-red-500/50 transition-colors" spellcheck="false">Welcome to Prompter Studio.
+    <div class="flex flex-1 overflow-hidden">
+        
+        <!-- Far Left Icon Bar -->
+        <div id="leftIconBar" class="w-14 border-r border-custom bg-custom-panel flex flex-col items-center py-4 gap-6 shrink-0 hidden sm:flex">
+            <div class="left-icon-btn w-8 h-8 rounded-lg bg-teal-custom/10 text-teal-custom flex items-center justify-center cursor-pointer hover:bg-teal-custom/20 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+            </div>
+            <div class="left-icon-btn w-8 h-8 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-custom-hover flex items-center justify-center cursor-pointer transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+            </div>
+            <div class="left-icon-btn w-8 h-8 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-custom-hover flex items-center justify-center cursor-pointer transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            </div>
+        </div>
 
-This is your interactive teleprompter.
-
-Type your script here and it will sync to the camera monitor.
-
-You can adjust the scrolling speed and the font size below.</textarea>
+        <!-- Left Sidebar: Controls -->
+        <aside class="w-full md:w-64 border-r border-custom bg-custom flex flex-col overflow-y-auto shrink-0 hidden md:flex">
+            <div class="p-4 border-b border-custom flex items-center justify-between shrink-0">
+                <h2 class="text-sm font-semibold text-slate-200"># Script Topics</h2>
+                <button class="text-slate-500 hover:text-slate-300">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                </button>
             </div>
             
-            <div class="space-y-4 p-4 bg-slate-950 rounded-lg border border-slate-800 shrink-0">
-                <div class="flex justify-between items-center">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase">Scroll Speed</label>
-                    <span id="speedValue" class="text-xs font-mono text-red-500">30</span>
+            <div class="p-4 flex flex-col gap-6">
+                <!-- Typography Dropdown -->
+                <div class="flex flex-col gap-2">
+                    <label class="text-xs font-semibold text-slate-400">🎭 Studio Font Family</label>
+                    <div class="relative">
+                        <select id="fontFamilySelector" class="w-full bg-[#151a1e] border border-custom rounded-md px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-teal-custom transition-colors cursor-pointer appearance-none">
+                            <optgroup label="🎮 Gaming & High-Energy Streaming">
+                                <option value="Impact, sans-serif">Streamer HUD (Impact)</option>
+                                <option value="'Trebuchet MS', sans-serif">Live Chat Glance (Trebuchet MS)</option>
+                            </optgroup>
+                            <optgroup label="🌿 Aesthetic Vlogs & Storytelling">
+                                <option value="Georgia, serif">Calm & Grounded Tone (Georgia)</option>
+                                <option value="Palatino, 'Palatino Linotype', serif">Premium Documentary (Palatino)</option>
+                            </optgroup>
+                            <optgroup label="💼 Tech, Corporate & Education">
+                                <option value="'Inter', sans-serif" selected>Minimalist Workspace (Inter)</option>
+                                <option value="'Open Sans', sans-serif">Clean Presentation (Open Sans)</option>
+                            </optgroup>
+                            <optgroup label="📰 Fast Social Shorts & News">
+                                <option value="Arial, sans-serif">Anti-Mistake Bold (Arial)</option>
+                                <option value="Verdana, sans-serif">Anti-Blur Spacing (Verdana)</option>
+                            </optgroup>
+                            <optgroup label="🎬 Hollywood Set & Creative Script">
+                                <option value="'Courier New', Courier, monospace">Classic Screenplay (Courier New)</option>
+                                <option value="Consolas, monospace">Sleek Developer Matrix (Consolas)</option>
+                            </optgroup>
+                        </select>
+                        <div class="absolute inset-y-0 right-2 flex items-center pointer-events-none text-slate-500">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
                 </div>
-                <input id="speedInput" type="range" min="5" max="60" value="30" class="w-full accent-red-600 bg-slate-800 rounded-lg h-1.5 appearance-none cursor-pointer">
+
+                <!-- Sliders -->
+                <div class="flex flex-col gap-2">
+                    <div class="flex justify-between items-center text-xs text-slate-400">
+                        <label class="font-semibold">Scroll Speed</label>
+                        <span id="speedValue" class="text-teal-custom font-mono">30</span>
+                    </div>
+                    <input id="speedInput" type="range" min="5" max="60" value="30" class="w-full">
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <div class="flex justify-between items-center text-xs text-slate-400">
+                        <label class="font-semibold">Font Size</label>
+                        <span id="fontValue" class="text-teal-custom font-mono">36px</span>
+                    </div>
+                    <input id="fontInput" type="range" min="18" max="52" value="36" class="w-full">
+                </div>
                 
-                <div class="flex justify-between items-center mt-4">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase">Font Size</label>
-                    <span id="fontValue" class="text-xs font-mono text-red-500">36 PX</span>
+                <!-- Anxiety Shield -->
+                <div class="pt-4 border-t border-custom">
+                    <label class="flex items-center justify-between cursor-pointer group">
+                        <div class="flex flex-col">
+                            <span class="text-xs font-semibold text-slate-300">Anxiety Safe Shield</span>
+                            <span class="text-[10px] text-slate-500">Blur camera preview locally</span>
+                        </div>
+                        <div class="relative">
+                            <input type="checkbox" id="anxietyShieldToggle" class="sr-only peer" checked>
+                            <div class="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-300 peer-checked:after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-custom"></div>
+                        </div>
+                    </label>
                 </div>
-                <input id="fontInput" type="range" min="18" max="52" value="36" class="w-full accent-red-600 bg-slate-800 rounded-lg h-1.5 appearance-none cursor-pointer">
             </div>
         </aside>
 
-        <!-- Right Column -->
-        <section class="flex-1 bg-black p-4 md:p-8 flex flex-col items-center justify-center gap-6 relative overflow-hidden">
-            <!-- Studio Monitor -->
-            <div class="relative w-full max-w-[800px] aspect-video bg-slate-900 rounded-2xl overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.5)] border border-slate-800 ring-1 ring-white/5 shrink-0">
-                
-                <video id="webcamVideo" autoplay playsinline muted class="absolute inset-0 w-full h-full object-cover mirrored"></video>
-                
-                <div class="absolute inset-0 bg-black/40 backdrop-blur-[1px] pointer-events-none z-10 overflow-hidden" id="prompterContainer">
-                    <div id="prompterContent" class="w-full px-8 md:px-12 text-center font-bold leading-tight text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] whitespace-pre-wrap" style="font-size: 36px; padding-top: 50vh; padding-bottom: 50vh;"></div>
-                </div>
-
-                <div class="absolute top-1/2 left-0 right-0 h-14 -translate-y-1/2 bg-red-600/20 border-y border-red-500/30 flex items-center justify-center pointer-events-none z-20">
-                    <div class="bg-red-600 px-3 py-1 rounded-full text-[10px] font-black tracking-tighter text-white">READ HERE</div>
-                    <div class="absolute left-4 flex gap-1">
-                        <div class="w-1 h-8 bg-red-500"></div><div class="w-1 h-8 bg-red-500/50"></div><div class="w-1 h-8 bg-red-500/20"></div>
-                    </div>
-                    <div class="absolute right-4 flex gap-1 rotate-180">
-                        <div class="w-1 h-8 bg-red-500"></div><div class="w-1 h-8 bg-red-500/50"></div><div class="w-1 h-8 bg-red-500/20"></div>
-                    </div>
-                </div>
+        <!-- Center Column: Studio Monitor & Interactive Chat Deck -->
+        <main class="flex-1 flex flex-col min-w-0 bg-custom relative">
+            
+            <!-- Header Tabs -->
+            <div id="centerTabs" class="h-12 border-b border-custom flex items-center px-4 gap-6 shrink-0 text-sm font-medium overflow-x-auto">
+                <button class="center-tab-btn h-full whitespace-nowrap border-b-2 border-teal-custom text-teal-custom flex items-center gap-2" data-tab="discussion">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                    Discussion (Studio Live)
+                </button>
+                <button class="center-tab-btn h-full whitespace-nowrap border-b-2 border-transparent text-slate-500 hover:text-slate-300 flex items-center gap-2 transition-colors" data-tab="overview">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                    Overview
+                </button>
+                <button class="center-tab-btn h-full whitespace-nowrap border-b-2 border-transparent text-slate-500 hover:text-slate-300 flex items-center gap-2 transition-colors" data-tab="performance">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    Performance
+                </button>
             </div>
 
-            <!-- Controls -->
-            <div class="flex items-center gap-4 md:gap-8 bg-slate-900/80 backdrop-blur px-8 py-4 rounded-2xl border border-white/5 shadow-2xl z-30 shrink-0">
-                <div class="flex flex-col items-center gap-1">
-                    <button id="recordBtn" class="w-16 h-16 rounded-full bg-slate-700 hover:bg-slate-600 flex items-center justify-center shadow-lg transition-transform active:scale-95">
-                        <div id="recordIcon" class="w-6 h-6 bg-red-500 rounded-full"></div>
+            <!-- Tab Contents -->
+            <div id="tab-discussion" class="tab-pane flex-1 flex flex-col min-h-0 relative">
+                <!-- Pre-Roll Overlay -->
+                <div id="countdownOverlay" class="absolute inset-0 bg-[#0f1416]/90 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+                    <span id="countdownText" class="text-8xl font-black text-teal-custom drop-shadow-[0_0_40px_rgba(20,184,166,0.6)]">3</span>
+                </div>
+                
+                <div id="initOverlay" class="absolute inset-0 bg-[#0f1416]/80 backdrop-blur-sm z-40 flex flex-col items-center justify-center">
+                    <button id="initCameraBtn" class="px-6 py-3 bg-teal-custom hover:bg-teal-400 text-slate-900 rounded-lg font-bold flex items-center gap-2 transition-transform active:scale-95 shadow-[0_0_20px_rgba(20,184,166,0.2)]">
+                        Enable Camera & Mic
                     </button>
-                    <span id="recordLabel" class="text-[10px] font-bold text-slate-400 mt-2">START REC</span>
                 </div>
-                
-                <div class="hidden md:block h-12 w-px bg-slate-800"></div>
-                
-                <div class="flex flex-col gap-2">
-                    <div class="flex items-center gap-4">
-                        <button id="scrollBtn" class="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-lg text-xs font-bold hover:bg-slate-700 transition-colors">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> <span id="scrollLabel">START SCROLL</span>
-                        </button>
-                        <button id="resetBtn" class="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-lg text-xs font-bold hover:bg-slate-700 transition-colors">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17 17h-10v-10h10v10z"/></svg> RESET
-                        </button>
+
+                <!-- Studio Monitor Container -->
+                <div class="flex-1 p-2 md:p-6 overflow-hidden flex items-center justify-center relative">
+                    <div class="relative w-full max-w-4xl aspect-video bg-black rounded-xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-custom flex items-start justify-center">
+                        
+                        <video id="webcamVideo" autoplay playsinline muted class="absolute inset-0 w-full h-full object-cover mirrored blur-xl opacity-40 transition-all duration-500"></video>
+                        
+                        <!-- Text Overlay Mask -->
+                        <div class="absolute inset-0 pointer-events-none z-10 overflow-hidden" id="prompterMask">
+                            <div id="prompterContainer" class="absolute top-0 left-0 right-0 h-[60%] overflow-hidden focus-mask">
+                                <!-- Wrapped narrowly to force center eye alignment -->
+                                <div id="prompterContent" class="w-full max-w-md mx-auto px-4 text-center font-bold leading-tight text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] whitespace-pre-wrap transition-opacity duration-300" style="font-size: 36px; padding-top: 15%; padding-bottom: 60%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Focal Guideway -->
+                        <div class="absolute top-[15%] left-0 right-0 h-10 -translate-y-1/2 flex items-center justify-center pointer-events-none z-20">
+                            <div class="bg-teal-custom/90 backdrop-blur px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest text-slate-950 shadow-lg border border-teal-custom flex items-center gap-2 uppercase">
+                                <span>👀 KEEP GAZE LOCKED HERE</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Message Input Console Footer -->
+                <div class="p-3 md:p-4 shrink-0 bg-custom border-t border-custom pb-safe">
+                    <div class="bg-custom-panel border border-custom rounded-xl p-3 flex flex-col gap-2 shadow-inner">
+                        <textarea id="scriptInput" class="w-full bg-transparent resize-none outline-none text-sm text-slate-200 h-20 placeholder-slate-600" placeholder="Type a message... (this acts as your script)"></textarea>
+                        
+                        <div class="flex items-center justify-between pt-2 border-t border-custom">
+                            <div class="flex items-center gap-4">
+                                <span class="text-xs text-slate-500 flex items-center gap-1">
+                                    <svg class="w-3 h-3 text-teal-custom" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    Auto-saved
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-2 md:gap-3">
+                                <button id="resetBtn" class="text-xs font-semibold text-slate-400 hover:text-slate-200 px-2 md:px-3 py-1.5 transition-colors">Discard</button>
+                                
+                                <button id="masterRecordBtn" class="px-4 md:px-5 py-2 bg-teal-custom hover:bg-teal-400 text-slate-900 rounded-lg text-xs md:text-sm font-bold transition-all shadow-[0_0_15px_rgba(20,184,166,0.3)] flex items-center gap-2 disabled:opacity-50" disabled>
+                                    🔴 Start Practice Run
+                                </button>
+                                
+                                <button id="stopBtn" class="hidden px-4 md:px-5 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 rounded-lg text-xs md:text-sm font-bold transition-all flex items-center gap-2">
+                                    <div class="w-2 h-2 bg-red-500 rounded-sm"></div> Stop
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
+            <div id="tab-overview" class="tab-pane hidden flex-1 p-6 md:p-12 overflow-y-auto">
+                <div class="max-w-3xl mx-auto">
+                    <h3 class="text-2xl font-bold text-slate-200 mb-6">Script Overview</h3>
+                    <div class="bg-custom-panel border border-custom rounded-xl p-6 flex flex-col gap-4">
+                        <p class="text-slate-400 leading-relaxed">
+                            This section contains the high-level summary and outline for your current script. 
+                            Review your main talking points and narrative flow here before navigating to the <strong>Studio Live</strong> tab to begin your practice run.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="tab-performance" class="tab-pane hidden flex-1 p-6 md:p-12 overflow-y-auto">
+                <div class="max-w-3xl mx-auto">
+                    <h3 class="text-2xl font-bold text-slate-200 mb-6">Session Analytics & Performance</h3>
+                    <div class="bg-custom-panel border border-custom rounded-xl p-6 flex flex-col gap-4">
+                        <p class="text-slate-400 italic">No performance data recorded for this script yet. Track your pacing, word count history, and delivery stats across practice runs here.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Export Drawer (Modal Over Center Column) -->
+            <div id="exportDrawer" class="absolute inset-0 bg-[#0f1416]/95 backdrop-blur-md z-40 hidden flex-col items-center justify-center p-4 md:p-6 opacity-0 transition-opacity duration-300">
+                <div class="w-full max-w-lg bg-[#151a1e] border border-custom rounded-2xl p-6 md:p-8 shadow-2xl">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-lg md:text-xl font-bold text-slate-100 flex items-center gap-3">
+                            🎉 Take Complete!
+                        </h3>
+                        <button id="closeDrawerBtn" class="text-slate-500 hover:text-slate-300 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
+                    <p class="text-xs md:text-sm text-slate-400 mb-8">You stepped out of your comfort zone. Download your assets below. Progress over perfection.</p>
+                    
+                    <div class="flex flex-col gap-4">
+                        <a id="downloadVideoBtn" class="flex items-center justify-between w-full px-4 md:px-6 py-4 bg-teal-custom/10 border border-teal-custom/30 hover:bg-teal-custom/20 rounded-xl transition-colors cursor-pointer group">
+                            <div class="flex items-center gap-3 md:gap-4">
+                                <div class="w-10 h-10 rounded-full bg-teal-custom/20 flex items-center justify-center text-teal-custom text-lg md:text-xl group-hover:scale-110 transition-transform">🎬</div>
+                                <div class="flex flex-col">
+                                    <span class="text-xs md:text-sm font-bold text-slate-200">Export Master Studio Video</span>
+                                    <span class="text-[10px] md:text-xs text-slate-500">.webm format (Camera + Audio)</span>
+                                </div>
+                            </div>
+                            <svg class="w-4 h-4 md:w-5 md:h-5 text-teal-custom" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        </a>
+                        
+                        <a id="downloadAudioBtn" class="flex items-center justify-between w-full px-4 md:px-6 py-4 bg-slate-800/50 border border-custom hover:bg-slate-800 rounded-xl transition-colors cursor-pointer group">
+                            <div class="flex items-center gap-3 md:gap-4">
+                                <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-slate-300 text-lg md:text-xl group-hover:scale-110 transition-transform">🎙️</div>
+                                <div class="flex flex-col">
+                                    <span class="text-xs md:text-sm font-bold text-slate-200">Export Raw Vocal Audio Track</span>
+                                    <span class="text-[10px] md:text-xs text-slate-500">.wav format (Audio only)</span>
+                                </div>
+                            </div>
+                            <svg class="w-4 h-4 md:w-5 md:h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
 
-        </section>
-    </main>
+        </main>
+
+        <!-- Right Sidebar: Analytics & Tools -->
+        <aside class="w-full lg:w-72 border-l border-custom bg-custom flex flex-col overflow-y-auto shrink-0 hidden lg:flex">
+            <div class="p-4 border-b border-custom shrink-0">
+                <h2 class="text-sm font-bold text-slate-200">Rooms Details</h2>
+            </div>
+            
+            <div class="p-4 flex flex-col gap-6">
+                <!-- Session Telemetry -->
+                <div class="flex flex-col gap-2">
+                    <span class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Live Pacing Metronome</span>
+                    <div class="bg-custom-panel border border-custom p-3 rounded-lg flex items-center justify-between">
+                        <span class="text-xs text-slate-300">WPM Rate</span>
+                        <div class="flex items-center gap-2">
+                            <div class="w-2 h-2 rounded-full bg-teal-custom animate-pulse" id="pacingDot"></div>
+                            <span class="text-teal-custom font-mono text-sm" id="wpmValue">120</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <span class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Target Length Word Counter</span>
+                    <div class="bg-custom-panel border border-custom p-3 rounded-lg flex flex-col gap-2">
+                        <div class="flex justify-between items-end">
+                            <span class="text-xl font-bold text-slate-200" id="wordCount">0</span>
+                            <span class="text-[10px] text-slate-500 mb-1">words</span>
+                        </div>
+                        <div class="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
+                            <div class="h-full bg-teal-custom w-[0%] transition-all" id="wordProgress"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr class="border-custom">
+
+                <!-- Inspiration Loader -->
+                <div class="flex flex-col gap-2">
+                    <span class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Need Inspiration?</span>
+                    <select id="inspirationSelector" class="w-full bg-custom-panel border border-custom rounded-md px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-teal-custom cursor-pointer appearance-none">
+                        <option value="">Load a quick script...</option>
+                        <option value="pitch">Elevator Pitch</option>
+                        <option value="update">Team Update</option>
+                        <option value="intro">Channel Intro</option>
+                    </select>
+                </div>
+                
+                <div class="mt-auto pt-4 flex flex-col gap-3 border-t border-custom">
+                    <span class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Participants (1)</span>
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-teal-custom/20 text-teal-custom flex items-center justify-center font-bold text-xs border border-teal-custom/30">HP</div>
+                        <div class="flex flex-col">
+                            <span class="text-xs font-medium text-slate-200">hemant patil</span>
+                            <span class="text-[10px] text-slate-500">Creator (You)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+    </div>
 
     <script>
         // DOM Elements
         const scriptInput = document.getElementById('scriptInput');
-        const prompterContent = document.getElementById('prompterContent');
         const prompterContainer = document.getElementById('prompterContainer');
+        const prompterContent = document.getElementById('prompterContent');
+        
+        const fontFamilySelector = document.getElementById('fontFamilySelector');
         const speedInput = document.getElementById('speedInput');
         const speedValue = document.getElementById('speedValue');
         const fontInput = document.getElementById('fontInput');
         const fontValue = document.getElementById('fontValue');
+        const anxietyShieldToggle = document.getElementById('anxietyShieldToggle');
         
-        const scrollBtn = document.getElementById('scrollBtn');
-        const scrollLabel = document.getElementById('scrollLabel');
-        const resetBtn = document.getElementById('resetBtn');
-        
+        const initOverlay = document.getElementById('initOverlay');
+        const initCameraBtn = document.getElementById('initCameraBtn');
         const webcamVideo = document.getElementById('webcamVideo');
-        const recordBtn = document.getElementById('recordBtn');
-        const recordIcon = document.getElementById('recordIcon');
-        const recordLabel = document.getElementById('recordLabel');
-        const recIndicator = document.getElementById('recIndicator');
         
-        const downloadMenuBtn = document.getElementById('downloadMenuBtn');
-        const downloadDropdown = document.getElementById('downloadDropdown');
+        const masterRecordBtn = document.getElementById('masterRecordBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const countdownOverlay = document.getElementById('countdownOverlay');
+        const countdownText = document.getElementById('countdownText');
+        
+        const exportDrawer = document.getElementById('exportDrawer');
+        const closeDrawerBtn = document.getElementById('closeDrawerBtn');
         const downloadAudioBtn = document.getElementById('downloadAudioBtn');
         const downloadVideoBtn = document.getElementById('downloadVideoBtn');
+        
+        const wordCount = document.getElementById('wordCount');
+        const wordProgress = document.getElementById('wordProgress');
+        const pacingDot = document.getElementById('pacingDot');
+        const wpmValue = document.getElementById('wpmValue');
+        const inspirationSelector = document.getElementById('inspirationSelector');
 
         // State
-        let isScrolling = false;
-        let isRecording = false;
-        let animationFrameId = null;
         let stream = null;
+        let isRecording = false;
+        let isScrolling = false;
+        let animationFrameId = null;
         
         let videoRecorder = null;
         let audioRecorder = null;
         let videoChunks = [];
         let audioChunks = [];
 
-        // Sync Script
+        // Scripts for Inspiration
+        const INSPIRATIONS = {
+            "pitch": "Hey there! I'm reaching out because we're building something that changes the game for creators.\n\nImagine never having to memorize a script again or worrying about where to look.\n\nThat's what we do. We give you your confidence back.",
+            "update": "Happy Friday everyone!\n\nJust a quick update on this week's progress.\n\nWe hit our milestone earlier than expected, and I couldn't be prouder of the team. Let's carry this momentum into next week.",
+            "intro": "Welcome back to the channel!\n\nToday, we're going to dive deep into a topic I am incredibly passionate about.\n\nBefore we start, make sure to hit that like button. Let's get right into it."
+        };
+
+        const DEFAULT_SCRIPT = "Welcome to your studio workspace.\n\nTake a deep breath.\n\nKeep your eyes right here on the focal guideway, and let the words flow naturally.\n\nYou've got this.";
+
+        // Initialization
+        const loadScript = () => {
+            const saved = localStorage.getItem('prompterStudioScript');
+            if (saved !== null) {
+                scriptInput.value = saved;
+            } else {
+                scriptInput.value = DEFAULT_SCRIPT;
+            }
+            syncScript();
+        };
+
+        const updateTelemetry = () => {
+            const text = scriptInput.value.trim();
+            const words = text ? text.split(/\s+/).length : 0;
+            wordCount.textContent = words;
+            
+            // Assume target is around 150 words for progress bar visualization
+            let progress = Math.min((words / 150) * 100, 100);
+            wordProgress.style.width = `${progress}%`;
+            
+            // Adjust pacing metronome purely for visual effect based on scroll speed
+            const speed = parseInt(speedInput.value, 10);
+            wpmValue.textContent = Math.round(100 + (speed * 1.5));
+            pacingDot.style.animationDuration = `${2 - (speed/60)}s`;
+        };
+
         const syncScript = () => {
             prompterContent.textContent = scriptInput.value;
+            localStorage.setItem('prompterStudioScript', scriptInput.value);
+            updateTelemetry();
         };
-        scriptInput.addEventListener('input', syncScript);
-        syncScript();
 
-        // Settings
+        // Listeners
+        scriptInput.addEventListener('input', syncScript);
+        
+        resetBtn.addEventListener('click', () => {
+            scriptInput.value = '';
+            syncScript();
+            prompterContainer.scrollTop = 0;
+        });
+
+        inspirationSelector.addEventListener('change', (e) => {
+            const val = e.target.value;
+            if(val && INSPIRATIONS[val]) {
+                scriptInput.value = INSPIRATIONS[val];
+                syncScript();
+                prompterContainer.scrollTop = 0;
+                e.target.value = ""; // reset dropdown
+            }
+        });
+
+        // Settings Listeners
         speedInput.addEventListener('input', (e) => {
             speedValue.textContent = e.target.value;
+            updateTelemetry();
         });
 
         fontInput.addEventListener('input', (e) => {
             const size = e.target.value;
-            fontValue.textContent = size + ' PX';
+            fontValue.textContent = size + 'px';
             prompterContent.style.fontSize = size + 'px';
         });
 
-        // Scrolling Logic
+        fontFamilySelector.addEventListener('change', (e) => {
+            prompterContent.style.fontFamily = e.target.value;
+        });
+
+        anxietyShieldToggle.addEventListener('change', (e) => {
+            if(e.target.checked) {
+                webcamVideo.classList.add('blur-xl', 'opacity-40');
+            } else {
+                webcamVideo.classList.remove('blur-xl', 'opacity-40');
+            }
+        });
+
+        // Apply defaults
+        prompterContent.style.fontFamily = fontFamilySelector.value;
+        loadScript();
+
+        // Camera Init
+        initCameraBtn.addEventListener('click', async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: { ideal: 1920 }, height: { ideal: 1080 }, facingMode: "user" },
+                    audio: { echoCancellation: true, noiseSuppression: true }
+                });
+                webcamVideo.srcObject = stream;
+                initOverlay.classList.add('hidden');
+                masterRecordBtn.disabled = false;
+            } catch (err) {
+                console.error("Camera access denied:", err);
+                alert("Please allow camera and microphone access to use the studio.");
+            }
+        });
+
+        // Smart Scrolling Logic
+        const checkAutoStop = () => {
+            // Buffer to ensure we reach the end
+            const scrolledHeight = prompterContainer.scrollTop + prompterContainer.clientHeight;
+            const scrollableHeight = prompterContainer.scrollHeight;
+            if (scrolledHeight >= scrollableHeight - 5) {
+                stopRecordingSession();
+            }
+        };
+
         const scrollLoop = () => {
             if (isScrolling) {
                 const speed = parseInt(speedInput.value, 10);
-                prompterContainer.scrollTop += (speed / 15);
+                prompterContainer.scrollTop += (speed / 20);
+                checkAutoStop();
                 animationFrameId = requestAnimationFrame(scrollLoop);
             }
         };
 
-        scrollBtn.addEventListener('click', () => {
-            isScrolling = !isScrolling;
-            if (isScrolling) {
-                scrollLabel.textContent = 'PAUSE SCROLL';
-                scrollBtn.classList.replace('bg-slate-800', 'bg-blue-600');
-                animationFrameId = requestAnimationFrame(scrollLoop);
-            } else {
-                scrollLabel.textContent = 'START SCROLL';
-                scrollBtn.classList.replace('bg-blue-600', 'bg-slate-800');
-                cancelAnimationFrame(animationFrameId);
-            }
-        });
-
-        resetBtn.addEventListener('click', () => {
+        // Recording Session Management
+        const startRecordingSession = async () => {
+            if (!stream) return;
+            
+            // Reset state
             prompterContainer.scrollTop = 0;
-        });
-
-        // Camera Initialization
-        async function initCamera() {
+            
+            // Pre-roll countdown
+            countdownOverlay.classList.remove('opacity-0', 'pointer-events-none');
+            
+            for (let i = 3; i > 0; i--) {
+                countdownText.textContent = i;
+                countdownText.style.transform = 'scale(1.5)';
+                countdownText.style.transition = 'transform 0s';
+                
+                await new Promise(r => setTimeout(r, 50));
+                
+                countdownText.style.transition = 'transform 0.9s ease-out';
+                countdownText.style.transform = 'scale(1)';
+                
+                await new Promise(r => setTimeout(r, 950));
+            }
+            
+            countdownOverlay.classList.add('opacity-0', 'pointer-events-none');
+            
+            // Initialize recorders
+            videoChunks = [];
+            audioChunks = [];
+            
             try {
-                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                webcamVideo.srcObject = stream;
-            } catch (err) {
-                console.error("Camera access denied:", err);
+                videoRecorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp9' });
+            } catch (e) {
+                // Fallback for Safari/iOS
+                videoRecorder = new MediaRecorder(stream, { mimeType: 'video/mp4' });
             }
-        }
-        initCamera();
+            
+            videoRecorder.ondataavailable = e => { if (e.data.size > 0) videoChunks.push(e.data); };
+            videoRecorder.onstop = () => {
+                const type = videoRecorder.mimeType || 'video/webm';
+                const blob = new Blob(videoChunks, { type });
+                downloadVideoBtn.href = URL.createObjectURL(blob);
+                downloadVideoBtn.download = `Studio-Take-${Date.now()}.${type.includes('mp4') ? 'mp4' : 'webm'}`;
+            };
 
-        // Recording Logic
-        recordBtn.addEventListener('click', () => {
-            if (!stream) {
-                alert("Camera not initialized or access denied.");
-                return;
-            }
-
-            if (isRecording) {
-                // Stop Recording
-                if (videoRecorder && videoRecorder.state !== 'inactive') videoRecorder.stop();
-                if (audioRecorder && audioRecorder.state !== 'inactive') audioRecorder.stop();
-                
-                isRecording = false;
-                
-                // Update UI
-                recordBtn.classList.replace('bg-red-600', 'bg-slate-700');
-                recordBtn.classList.remove('shadow-red-900/20');
-                recordIcon.className = "w-6 h-6 bg-red-500 rounded-full";
-                recordLabel.textContent = "START REC";
-                recIndicator.classList.add('hidden');
-                
-                // Show Download Icon & Dropdown
-                downloadMenuBtn.classList.remove('hidden');
-                downloadDropdown.classList.remove('hidden');
-                downloadDropdown.classList.add('flex');
-            } else {
-                // Start Recording
-                videoChunks = [];
-                audioChunks = [];
-                
-                // Hide Dropdown and Icon
-                downloadMenuBtn.classList.add('hidden');
-                downloadDropdown.classList.add('hidden');
-                downloadDropdown.classList.remove('flex');
-                downloadAudioBtn.removeAttribute('href');
-                downloadVideoBtn.removeAttribute('href');
-
-                // Setup video recorder
-                videoRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
-                videoRecorder.ondataavailable = e => { if (e.data.size > 0) videoChunks.push(e.data); };
-                videoRecorder.onstop = () => {
-                    const blob = new Blob(videoChunks, { type: 'video/webm' });
-                    const url = URL.createObjectURL(blob);
-                    downloadVideoBtn.href = url;
-                    downloadVideoBtn.download = `teleprompter-video-${Date.now()}.webm`;
-                };
-
-                // Setup audio recorder
-                const audioTracks = stream.getAudioTracks();
-                if(audioTracks.length > 0) {
-                    const audioStream = new MediaStream(audioTracks);
+            const audioTracks = stream.getAudioTracks();
+            if(audioTracks.length > 0) {
+                const audioStream = new MediaStream(audioTracks);
+                try {
                     audioRecorder = new MediaRecorder(audioStream, { mimeType: 'audio/webm' });
-                    audioRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
-                    audioRecorder.onstop = () => {
-                        const blob = new Blob(audioChunks, { type: 'audio/webm' });
-                        const url = URL.createObjectURL(blob);
-                        downloadAudioBtn.href = url;
-                        downloadAudioBtn.download = `teleprompter-audio-${Date.now()}.wav`; 
-                    };
-                    audioRecorder.start();
+                } catch(e) {
+                    audioRecorder = new MediaRecorder(audioStream, { mimeType: 'audio/mp4' });
                 }
-
-                videoRecorder.start();
-                isRecording = true;
-
-                // Update UI
-                recordBtn.classList.replace('bg-slate-700', 'bg-red-600');
-                recordBtn.classList.add('shadow-red-900/20');
-                recordIcon.className = "w-6 h-6 bg-white rounded-sm";
-                recordLabel.textContent = "STOP REC";
-                recIndicator.classList.remove('hidden');
+                audioRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+                audioRecorder.onstop = () => {
+                    const type = audioRecorder.mimeType || 'audio/webm';
+                    const blob = new Blob(audioChunks, { type }); 
+                    downloadAudioBtn.href = URL.createObjectURL(blob);
+                    downloadAudioBtn.download = `Studio-Vocal-Track-${Date.now()}.wav`; 
+                };
+                audioRecorder.start();
             }
+
+            videoRecorder.start();
+            isRecording = true;
+            isScrolling = true;
+            
+            // UI Transition
+            masterRecordBtn.classList.add('hidden');
+            stopBtn.classList.remove('hidden');
+            
+            // Start Engine
+            animationFrameId = requestAnimationFrame(scrollLoop);
+        };
+
+        const stopRecordingSession = () => {
+            if (!isRecording) return;
+            
+            isScrolling = false;
+            cancelAnimationFrame(animationFrameId);
+            
+            if (videoRecorder && videoRecorder.state !== 'inactive') videoRecorder.stop();
+            if (audioRecorder && audioRecorder.state !== 'inactive') audioRecorder.stop();
+            
+            isRecording = false;
+            
+            // UI Revert
+            stopBtn.classList.add('hidden');
+            masterRecordBtn.classList.remove('hidden');
+            
+            // Show Export Modal
+            exportDrawer.classList.remove('hidden');
+            exportDrawer.classList.add('flex');
+            // Allow display block to render before triggering opacity transition
+            setTimeout(() => {
+                exportDrawer.classList.remove('opacity-0');
+            }, 10);
+        };
+
+        masterRecordBtn.addEventListener('click', startRecordingSession);
+        stopBtn.addEventListener('click', stopRecordingSession);
+
+        closeDrawerBtn.addEventListener('click', () => {
+            exportDrawer.classList.add('opacity-0');
+            setTimeout(() => {
+                exportDrawer.classList.add('hidden');
+                exportDrawer.classList.remove('flex');
+            }, 300); // Wait for transition
         });
 
-        downloadMenuBtn.addEventListener('click', () => {
-            const isHidden = downloadDropdown.classList.contains('hidden');
-            if (isHidden) {
-                downloadDropdown.classList.remove('hidden');
-                downloadDropdown.classList.add('flex');
-            } else {
-                downloadDropdown.classList.add('hidden');
-                downloadDropdown.classList.remove('flex');
-            }
+        // Tab Navigation Logic
+        const centerTabBtns = document.querySelectorAll('.center-tab-btn');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+
+        centerTabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Update active state of buttons
+                centerTabBtns.forEach(b => {
+                    b.classList.remove('border-teal-custom', 'text-teal-custom');
+                    b.classList.add('border-transparent', 'text-slate-500');
+                });
+                btn.classList.remove('border-transparent', 'text-slate-500');
+                btn.classList.add('border-teal-custom', 'text-teal-custom');
+
+                // Update active tab pane
+                const targetTab = btn.getAttribute('data-tab');
+                tabPanes.forEach(pane => {
+                    pane.classList.add('hidden');
+                    pane.classList.remove('flex');
+                });
+                
+                const activePane = document.getElementById(`tab-${targetTab}`);
+                if (activePane) {
+                    activePane.classList.remove('hidden');
+                    if (targetTab === 'discussion') {
+                        activePane.classList.add('flex');
+                    }
+                }
+            });
         });
-        
-        // Hide dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!downloadMenuBtn.contains(e.target) && !downloadDropdown.contains(e.target)) {
-                downloadDropdown.classList.add('hidden');
-                downloadDropdown.classList.remove('flex');
-            }
+
+        // Left Icon Bar Logic
+        const leftIconBtns = document.querySelectorAll('.left-icon-btn');
+        leftIconBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                leftIconBtns.forEach(b => {
+                    b.classList.remove('bg-teal-custom/10', 'text-teal-custom');
+                    b.classList.add('text-slate-500', 'hover:text-slate-300', 'hover:bg-custom-hover');
+                });
+                btn.classList.remove('text-slate-500', 'hover:text-slate-300', 'hover:bg-custom-hover');
+                btn.classList.add('bg-teal-custom/10', 'text-teal-custom');
+            });
         });
 
     </script>
