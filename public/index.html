@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teleprompter Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mirrored { transform: scaleX(-1); }
+    </style>
+</head>
+<body class="h-full flex flex-col overflow-hidden text-slate-200">
+    <header class="h-14 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-6 shrink-0 relative z-50">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-red-600 rounded flex items-center justify-center">
+                <div class="w-3 h-3 bg-white rounded-full animate-pulse"></div>
+            </div>
+            <h1 class="text-lg font-bold tracking-tight text-white">PROMPTER<span class="text-red-500 font-mono ml-1">STUDIO</span></h1>
+        </div>
+        <div class="flex items-center gap-6 text-xs font-mono uppercase tracking-widest">
+            <div class="items-center gap-2 hidden md:flex"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> 1080p | 30fps</div>
+            <div class="text-slate-400 hidden md:block">Audio: 48kHz Stereo</div>
+            <div id="recIndicator" class="text-red-500 font-bold hidden">REC</div>
+            
+            <!-- Download Dropdown -->
+            <div class="relative">
+                <button id="downloadMenuBtn" class="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors hidden" title="Download Assets">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                </button>
+                <div id="downloadDropdown" class="absolute right-0 top-full mt-2 w-64 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl overflow-hidden hidden flex-col z-50">
+                    <div class="p-3 border-b border-slate-800 bg-slate-800/50">
+                        <h3 class="text-[10px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                            <svg class="w-3 h-3 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            Session Assets Ready
+                        </h3>
+                    </div>
+                    <div class="flex flex-col p-2 gap-1">
+                        <a id="downloadVideoBtn" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-white hover:bg-emerald-600/20 hover:text-emerald-400 transition-colors cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            Video File (.webm)
+                        </a>
+                        <a id="downloadAudioBtn" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-white hover:bg-blue-600/20 hover:text-blue-400 transition-colors cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
+                            Audio Only (.wav)
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 flex flex-col md:flex-row overflow-hidden">
+        <!-- Left Column -->
+        <aside class="w-full md:w-[380px] bg-slate-900/50 border-r border-slate-800 p-6 flex flex-col gap-6 shrink-0 z-10 relative shadow-xl overflow-y-auto">
+            <div class="flex-1 flex flex-col gap-2">
+                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Script Editor</label>
+                <textarea id="scriptInput" class="flex-1 bg-slate-950 border border-slate-800 rounded-lg p-4 text-sm leading-relaxed text-slate-300 resize-none focus:outline-none focus:border-red-500/50 transition-colors" spellcheck="false">Welcome to Prompter Studio.
+
+This is your interactive teleprompter.
+
+Type your script here and it will sync to the camera monitor.
+
+You can adjust the scrolling speed and the font size below.</textarea>
+            </div>
+            
+            <div class="space-y-4 p-4 bg-slate-950 rounded-lg border border-slate-800 shrink-0">
+                <div class="flex justify-between items-center">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase">Scroll Speed</label>
+                    <span id="speedValue" class="text-xs font-mono text-red-500">30</span>
+                </div>
+                <input id="speedInput" type="range" min="5" max="60" value="30" class="w-full accent-red-600 bg-slate-800 rounded-lg h-1.5 appearance-none cursor-pointer">
+                
+                <div class="flex justify-between items-center mt-4">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase">Font Size</label>
+                    <span id="fontValue" class="text-xs font-mono text-red-500">36 PX</span>
+                </div>
+                <input id="fontInput" type="range" min="18" max="52" value="36" class="w-full accent-red-600 bg-slate-800 rounded-lg h-1.5 appearance-none cursor-pointer">
+            </div>
+        </aside>
+
+        <!-- Right Column -->
+        <section class="flex-1 bg-black p-4 md:p-8 flex flex-col items-center justify-center gap-6 relative overflow-hidden">
+            <!-- Studio Monitor -->
+            <div class="relative w-full max-w-[800px] aspect-video bg-slate-900 rounded-2xl overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.5)] border border-slate-800 ring-1 ring-white/5 shrink-0">
+                
+                <video id="webcamVideo" autoplay playsinline muted class="absolute inset-0 w-full h-full object-cover mirrored"></video>
+                
+                <div class="absolute inset-0 bg-black/40 backdrop-blur-[1px] pointer-events-none z-10 overflow-hidden" id="prompterContainer">
+                    <div id="prompterContent" class="w-full px-8 md:px-12 text-center font-bold leading-tight text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] whitespace-pre-wrap" style="font-size: 36px; padding-top: 50vh; padding-bottom: 50vh;"></div>
+                </div>
+
+                <div class="absolute top-1/2 left-0 right-0 h-14 -translate-y-1/2 bg-red-600/20 border-y border-red-500/30 flex items-center justify-center pointer-events-none z-20">
+                    <div class="bg-red-600 px-3 py-1 rounded-full text-[10px] font-black tracking-tighter text-white">READ HERE</div>
+                    <div class="absolute left-4 flex gap-1">
+                        <div class="w-1 h-8 bg-red-500"></div><div class="w-1 h-8 bg-red-500/50"></div><div class="w-1 h-8 bg-red-500/20"></div>
+                    </div>
+                    <div class="absolute right-4 flex gap-1 rotate-180">
+                        <div class="w-1 h-8 bg-red-500"></div><div class="w-1 h-8 bg-red-500/50"></div><div class="w-1 h-8 bg-red-500/20"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="flex items-center gap-4 md:gap-8 bg-slate-900/80 backdrop-blur px-8 py-4 rounded-2xl border border-white/5 shadow-2xl z-30 shrink-0">
+                <div class="flex flex-col items-center gap-1">
+                    <button id="recordBtn" class="w-16 h-16 rounded-full bg-slate-700 hover:bg-slate-600 flex items-center justify-center shadow-lg transition-transform active:scale-95">
+                        <div id="recordIcon" class="w-6 h-6 bg-red-500 rounded-full"></div>
+                    </button>
+                    <span id="recordLabel" class="text-[10px] font-bold text-slate-400 mt-2">START REC</span>
+                </div>
+                
+                <div class="hidden md:block h-12 w-px bg-slate-800"></div>
+                
+                <div class="flex flex-col gap-2">
+                    <div class="flex items-center gap-4">
+                        <button id="scrollBtn" class="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-lg text-xs font-bold hover:bg-slate-700 transition-colors">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> <span id="scrollLabel">START SCROLL</span>
+                        </button>
+                        <button id="resetBtn" class="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-lg text-xs font-bold hover:bg-slate-700 transition-colors">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17 17h-10v-10h10v10z"/></svg> RESET
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+
+        </section>
+    </main>
+
+    <script>
+        // DOM Elements
+        const scriptInput = document.getElementById('scriptInput');
+        const prompterContent = document.getElementById('prompterContent');
+        const prompterContainer = document.getElementById('prompterContainer');
+        const speedInput = document.getElementById('speedInput');
+        const speedValue = document.getElementById('speedValue');
+        const fontInput = document.getElementById('fontInput');
+        const fontValue = document.getElementById('fontValue');
+        
+        const scrollBtn = document.getElementById('scrollBtn');
+        const scrollLabel = document.getElementById('scrollLabel');
+        const resetBtn = document.getElementById('resetBtn');
+        
+        const webcamVideo = document.getElementById('webcamVideo');
+        const recordBtn = document.getElementById('recordBtn');
+        const recordIcon = document.getElementById('recordIcon');
+        const recordLabel = document.getElementById('recordLabel');
+        const recIndicator = document.getElementById('recIndicator');
+        
+        const downloadMenuBtn = document.getElementById('downloadMenuBtn');
+        const downloadDropdown = document.getElementById('downloadDropdown');
+        const downloadAudioBtn = document.getElementById('downloadAudioBtn');
+        const downloadVideoBtn = document.getElementById('downloadVideoBtn');
+
+        // State
+        let isScrolling = false;
+        let isRecording = false;
+        let animationFrameId = null;
+        let stream = null;
+        
+        let videoRecorder = null;
+        let audioRecorder = null;
+        let videoChunks = [];
+        let audioChunks = [];
+
+        // Sync Script
+        const syncScript = () => {
+            prompterContent.textContent = scriptInput.value;
+        };
+        scriptInput.addEventListener('input', syncScript);
+        syncScript();
+
+        // Settings
+        speedInput.addEventListener('input', (e) => {
+            speedValue.textContent = e.target.value;
+        });
+
+        fontInput.addEventListener('input', (e) => {
+            const size = e.target.value;
+            fontValue.textContent = size + ' PX';
+            prompterContent.style.fontSize = size + 'px';
+        });
+
+        // Scrolling Logic
+        const scrollLoop = () => {
+            if (isScrolling) {
+                const speed = parseInt(speedInput.value, 10);
+                prompterContainer.scrollTop += (speed / 15);
+                animationFrameId = requestAnimationFrame(scrollLoop);
+            }
+        };
+
+        scrollBtn.addEventListener('click', () => {
+            isScrolling = !isScrolling;
+            if (isScrolling) {
+                scrollLabel.textContent = 'PAUSE SCROLL';
+                scrollBtn.classList.replace('bg-slate-800', 'bg-blue-600');
+                animationFrameId = requestAnimationFrame(scrollLoop);
+            } else {
+                scrollLabel.textContent = 'START SCROLL';
+                scrollBtn.classList.replace('bg-blue-600', 'bg-slate-800');
+                cancelAnimationFrame(animationFrameId);
+            }
+        });
+
+        resetBtn.addEventListener('click', () => {
+            prompterContainer.scrollTop = 0;
+        });
+
+        // Camera Initialization
+        async function initCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                webcamVideo.srcObject = stream;
+            } catch (err) {
+                console.error("Camera access denied:", err);
+            }
+        }
+        initCamera();
+
+        // Recording Logic
+        recordBtn.addEventListener('click', () => {
+            if (!stream) {
+                alert("Camera not initialized or access denied.");
+                return;
+            }
+
+            if (isRecording) {
+                // Stop Recording
+                if (videoRecorder && videoRecorder.state !== 'inactive') videoRecorder.stop();
+                if (audioRecorder && audioRecorder.state !== 'inactive') audioRecorder.stop();
+                
+                isRecording = false;
+                
+                // Update UI
+                recordBtn.classList.replace('bg-red-600', 'bg-slate-700');
+                recordBtn.classList.remove('shadow-red-900/20');
+                recordIcon.className = "w-6 h-6 bg-red-500 rounded-full";
+                recordLabel.textContent = "START REC";
+                recIndicator.classList.add('hidden');
+                
+                // Show Download Icon & Dropdown
+                downloadMenuBtn.classList.remove('hidden');
+                downloadDropdown.classList.remove('hidden');
+                downloadDropdown.classList.add('flex');
+            } else {
+                // Start Recording
+                videoChunks = [];
+                audioChunks = [];
+                
+                // Hide Dropdown and Icon
+                downloadMenuBtn.classList.add('hidden');
+                downloadDropdown.classList.add('hidden');
+                downloadDropdown.classList.remove('flex');
+                downloadAudioBtn.removeAttribute('href');
+                downloadVideoBtn.removeAttribute('href');
+
+                // Setup video recorder
+                videoRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+                videoRecorder.ondataavailable = e => { if (e.data.size > 0) videoChunks.push(e.data); };
+                videoRecorder.onstop = () => {
+                    const blob = new Blob(videoChunks, { type: 'video/webm' });
+                    const url = URL.createObjectURL(blob);
+                    downloadVideoBtn.href = url;
+                    downloadVideoBtn.download = `teleprompter-video-${Date.now()}.webm`;
+                };
+
+                // Setup audio recorder
+                const audioTracks = stream.getAudioTracks();
+                if(audioTracks.length > 0) {
+                    const audioStream = new MediaStream(audioTracks);
+                    audioRecorder = new MediaRecorder(audioStream, { mimeType: 'audio/webm' });
+                    audioRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+                    audioRecorder.onstop = () => {
+                        const blob = new Blob(audioChunks, { type: 'audio/webm' });
+                        const url = URL.createObjectURL(blob);
+                        downloadAudioBtn.href = url;
+                        downloadAudioBtn.download = `teleprompter-audio-${Date.now()}.wav`; 
+                    };
+                    audioRecorder.start();
+                }
+
+                videoRecorder.start();
+                isRecording = true;
+
+                // Update UI
+                recordBtn.classList.replace('bg-slate-700', 'bg-red-600');
+                recordBtn.classList.add('shadow-red-900/20');
+                recordIcon.className = "w-6 h-6 bg-white rounded-sm";
+                recordLabel.textContent = "STOP REC";
+                recIndicator.classList.remove('hidden');
+            }
+        });
+
+        downloadMenuBtn.addEventListener('click', () => {
+            const isHidden = downloadDropdown.classList.contains('hidden');
+            if (isHidden) {
+                downloadDropdown.classList.remove('hidden');
+                downloadDropdown.classList.add('flex');
+            } else {
+                downloadDropdown.classList.add('hidden');
+                downloadDropdown.classList.remove('flex');
+            }
+        });
+        
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!downloadMenuBtn.contains(e.target) && !downloadDropdown.contains(e.target)) {
+                downloadDropdown.classList.add('hidden');
+                downloadDropdown.classList.remove('flex');
+            }
+        });
+
+    </script>
+</body>
+</html>
